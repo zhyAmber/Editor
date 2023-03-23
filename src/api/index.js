@@ -81,7 +81,6 @@ export const reqcontent =params => {
   console.log('接口里的编辑框数据file_content: ', file_content);
   console.log('接口里的编辑框数据reponame: ', reponame);
   console.log('接口里的编辑框数据rel_path: ', file_rel_path);
-  var FormData = require('form-data');
   const fileContent = new File([file_content],'fileToUpload.html', { type: '' })
   var data = new FormData();
   var myHeaders = new Headers();

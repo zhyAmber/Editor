@@ -1,8 +1,17 @@
 import axios from 'axios';
 import storageUtils from '../utils/storageUtils';
 
-const instance = axios.create({
-  baseURL: 'http://127.0.0.1:5000'
+let BASEURL
+if(process.env.NODE_ENV==="production"){
+  // 部署环境
+  BASEURL = 'http://114.115.249.201:30004'
+}else{
+  // 开发环境
+  BASEURL = 'http://127.0.0.1:5000'
+}
+
+let instance = axios.create({
+  baseURL: BASEURL
 });
 
 //instance.defaults.withCredentials = true;
