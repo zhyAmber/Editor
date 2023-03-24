@@ -26,7 +26,7 @@ import 'codemirror/addon/search/search.js'
 //代码高亮
 import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
-import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List } from 'antd';
+import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio } from 'antd';
 import { reqcontent, getFile, pushcontent, pullcontent } from '../api';
 import InputDemo from '../components/input';
 
@@ -40,6 +40,7 @@ const Editor = ({ language, value, setEditorState }) => {
   const [cursor, setCursor] = useState({ line: 0, ch: 0 })
   const [key, setKey] = useState(1)
   const [commitmsg, setCommitmsg] = useState("chore: Commit by Editor")
+  const [viewmode,setViewmode]=useState("code") // code, commit
   // commit历史信息
   const [commithistory, setCommithistory] = useLocalStorage("commithis", false)
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
@@ -49,6 +50,10 @@ const Editor = ({ language, value, setEditorState }) => {
     // localStorage.setItem('content',JSON.stringify(value))
   };
 
+  useEffect(()=>{
+    const codemirrorDom = document.getElementsByClassName('CodeMirror')[0]
+    codemirrorDom.setAttribute("style","height: 100%")
+  },[])
 
   window.onIframeCallback = function ({ index, tagName }) {
     document.getElementById('iframe').blur()
@@ -205,21 +210,32 @@ const Editor = ({ language, value, setEditorState }) => {
     setTreeData(data)
   }
 
-  const CodeTab = () => {
-    /**
-     * 包含文件树和代码编辑框
-     */
-    return (
+  return (
+    <Layout>
+      <Form>
+        <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
+      </Form>
+      <br/>
       <Row>
+      <Radio.Group value={viewmode} onChange={(e)=>{
+        setViewmode(e.target.value)
+      }}>
+        <Radio.Button value="code">Codes</Radio.Button>
+        <Radio.Button value="commit">Commits</Radio.Button>
+      </Radio.Group>
+      </Row>
+      {viewmode==="code"?(
+        <Row>
         <Col span={6}>
           <DirectoryTree
             multiple
+            defaultExpandAll={true}
             onSelect={onSelect}
             onExpand={onExpand}
             treeData={treeData}
           />
         </Col>
-        <Col span={18} style={{ height: '100vh' }}>
+        <Col span={18}>
           <Form>
             <Form.Item name="content">
               <div>
@@ -317,47 +333,41 @@ const Editor = ({ language, value, setEditorState }) => {
         </Col>
 
       </Row>
-    )
-  }
-  /**
-   * 包含历史commit信息
-   */
-  const CommitTab = () => {
-    return (
-      <div style={{maxHeight:'700px',overflow:'auto'}}>{commithistory ? <List
-        itemLayout="horizontal"
-        dataSource={commithistory}
-        renderItem={(item, index) => (
-          <List.Item>
-            <List.Item.Meta
-              title={<a onClick={() => {
-                message.destroy()
-                message.warn("点击标题check out还没写完")
-              }
-              }>
-                {item.title}
-              </a>}
-              description={item.time}
-            />
-            {item.name}
-            <br />
-            {item.hash}
-          </List.Item>
-        )}
-      /> : "no history commits"}</div>
-    )
-  }
-
-  return (
-    <Layout>
-      <Form>
-        <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
-      </Form>
-      <br />
-      <Tabs defaultActiveKey='code' items={[{ key: 'code', label: 'Codes', children: <CodeTab /> }, { key: 'commit', label: 'Commits', children: <CommitTab /> }]}
-      ></Tabs>
+      ):(
+        <CommitTab commithistory={commithistory} />
+      )}
 
     </Layout>
   );
 };
 export default Editor;
+
+
+/**
+ * 包含历史commit信息
+ */
+const CommitTab = ({commithistory}) => {
+  return (
+    <div style={{ maxHeight: '700px', overflow: 'auto', paddingLeft: '30px' }}>{commithistory ? <List
+      itemLayout="horizontal"
+      dataSource={commithistory}
+      renderItem={(item, index) => (
+        <List.Item>
+          <List.Item.Meta
+            title={<a onClick={() => {
+              message.destroy()
+              message.warn("点击标题check out还没写完")
+            }
+            }>
+              {item.title}
+            </a>}
+            description={item.time}
+          />
+          {item.name}
+          <br />
+          {item.hash}
+        </List.Item>
+      )}
+    /> : "no history commits"}</div>
+  )
+}
