@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { message } from 'antd';
+import useLocalStorage from "../hooks/useLocalStorage"
 import 'codemirror/lib/codemirror.css';
 
 import 'codemirror/mode/xml/xml';
@@ -26,7 +26,7 @@ import 'codemirror/addon/search/search.js'
 //代码高亮
 import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
-import { Form, Button, Layout, Tree, Row, Col, Input } from 'antd';
+import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List } from 'antd';
 import { reqcontent, getFile, pushcontent, pullcontent } from '../api';
 import InputDemo from '../components/input';
 
@@ -39,7 +39,9 @@ const Editor = ({ language, value, setEditorState }) => {
   const [treeData, setTreeData] = useState([]);
   const [cursor, setCursor] = useState({ line: 0, ch: 0 })
   const [key, setKey] = useState(1)
-  const [commitmsg, setCommitmsg] = useState("Commit by Editor")
+  const [commitmsg, setCommitmsg] = useState("chore: Commit by Editor")
+  // commit历史信息
+  const [commithistory, setCommithistory] = useLocalStorage("commithis", false)
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
   const handleChange = (editor, data, value) => {
     setEditorState(value);
@@ -203,12 +205,11 @@ const Editor = ({ language, value, setEditorState }) => {
     setTreeData(data)
   }
 
-  return (
-    <Layout>
-      <Form>
-        <InputDemo getTreeData={getTreeData} />
-      </Form>
-      <br />
+  const CodeTab = () => {
+    /**
+     * 包含文件树和代码编辑框
+     */
+    return (
       <Row>
         <Col span={6}>
           <DirectoryTree
@@ -316,6 +317,46 @@ const Editor = ({ language, value, setEditorState }) => {
         </Col>
 
       </Row>
+    )
+  }
+  /**
+   * 包含历史commit信息
+   */
+  const CommitTab = () => {
+    return (
+      <div style={{maxHeight:'700px',overflow:'auto'}}>{commithistory ? <List
+        itemLayout="horizontal"
+        dataSource={commithistory}
+        renderItem={(item, index) => (
+          <List.Item>
+            <List.Item.Meta
+              title={<a onClick={() => {
+                message.destroy()
+                message.warn("点击标题check out还没写完")
+              }
+              }>
+                {item.title}
+              </a>}
+              description={item.time}
+            />
+            {item.name}
+            <br />
+            {item.hash}
+          </List.Item>
+        )}
+      /> : "no history commits"}</div>
+    )
+  }
+
+  return (
+    <Layout>
+      <Form>
+        <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
+      </Form>
+      <br />
+      <Tabs defaultActiveKey='code' items={[{ key: 'code', label: 'Codes', children: <CodeTab /> }, { key: 'commit', label: 'Commits', children: <CommitTab /> }]}
+      ></Tabs>
+
     </Layout>
   );
 };

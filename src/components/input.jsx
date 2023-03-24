@@ -1,33 +1,33 @@
 import React from 'react';
-import { message} from 'antd';
+import { message } from 'antd';
 import { reqInput } from '../api';
 
- 
-class InputDemo extends React.Component{
+
+class InputDemo extends React.Component {
   state = {
-    InputValue : "git@github.com:zhyAmber/FYP.git",//输入框默认输入值
-    content:'',
+    InputValue: "git@github.com:zhyAmber/FYP.git",//输入框默认输入值
+    content: '',
   };
- 
-componentDidMount(){
-  let Storagedata=JSON.parse(localStorage.getItem('result.data: '))
-  if (Storagedata){
-    this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]));
+
+  componentDidMount() {
+    let Storagedata = JSON.parse(localStorage.getItem('result.data: '))
+    if (Storagedata) {
+      this.props.getTreeData(Storagedata.reponame, this.getData([Storagedata.foldertree]));
+    }
+
   }
-  
-}
 
   handleGetInputValue = (event) => {
     this.setState({
-      InputValue : event.target.value,
+      InputValue: event.target.value,
     });
     //let Storagedata=JSON.parse(this.localStorage.getItem('result.data: '))
     //  console.log("Storagedata",Storagedata)
     // this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]))
   };
 
-  
-   getData = (data) => {
+
+  getData = (data) => {
     let obj = []
     console.log(data, 'data');
     data.forEach(v => {
@@ -41,15 +41,15 @@ componentDidMount(){
           })
         })
       }
-      if(v.folders && v.folders.length > 0){
-        v.folders.forEach(i=>{
+      if (v.folders && v.folders.length > 0) {
+        v.folders.forEach(i => {
           obj.push({
-            title:i.name,
-            key:i.rel_path,
+            title: i.name,
+            key: i.rel_path,
             children: this.getData([i])
           })
         })
-      }else{
+      } else {
         obj.push({
           title: v.name,
           key: v.rel_path,
@@ -60,28 +60,28 @@ componentDidMount(){
   }
 
   InputSubmit = async () => {
-    const {InputValue} = this.state;
+    const { InputValue } = this.state;
     console.log('传给后端的输入框数据value: ', InputValue);
     message.destroy()
     message.loading("Send Clone Request")
     let result = await reqInput(InputValue);
     console.log('result: ', result);
     console.log('result.data: ', result.data)
-    
     //let Storagedata=this.state.Storagedata
     //let Storagedata=JSON.parse(localStorage.getItem('result.data: '))
     // console.log('Storagedata',Storagedata)
-    localStorage.setItem('result.data: ', JSON.stringify(result.data))
-    this.props.getTreeData(result.data.reponame,this.getData([result.data.foldertree]))
-    // localStorage.setItem('result.data: ', JSON.stringify(result.data))
-    //this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]))
-    this.setState({
-      content : result.data.foldertree.files,
-      localStorage:result,
-    })
     if (result.status === 200) {
       message.destroy()
       message.success("Sucessful Clone")
+      localStorage.setItem('result.data: ', JSON.stringify(result.data))
+      this.props.getTreeData(result.data.reponame, this.getData([result.data.foldertree]))
+      // localStorage.setItem('result.data: ', JSON.stringify(result.data))
+      //this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]))
+      this.setState({
+        content: result.data.foldertree.files,
+        localStorage: result,
+      })
+      this.props.setCommitHis(result.data.logs)
     } else {
       message.destroy()
       message.error('Error when clone');
@@ -89,8 +89,8 @@ componentDidMount(){
     //console.log('localstorage',localStorage)
   };
 
-  render(){
-    return(
+  render() {
+    return (
       <div >
         <input
           value={this.state.InputValue}
@@ -104,11 +104,11 @@ componentDidMount(){
           onChange={this.handleGetInputValue}
         />
         </div> */}
-        
+
 
       </div>
     )
   }
 }
- 
+
 export default InputDemo;
