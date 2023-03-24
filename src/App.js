@@ -42,11 +42,11 @@ function App() {
 
 
 
-//   <html>
-//   <body>${html}</body>
-//   <style>${css}</style>
-//   <script>${js}</script>
-//  </html>
+  //   <html>
+  //   <body>${html}</body>
+  //   <style>${css}</style>
+  //   <script>${js}</script>
+  //  </html>
   useEffect(() => {
     const timeOut = setTimeout(() => {
       setSrcDoc(
@@ -67,7 +67,7 @@ function App() {
     // }).then(res=>{
     //   console.log(res);
     // })
-    return () => {clearTimeout(timeOut)}
+    return () => { clearTimeout(timeOut) }
   }, [html, css, js]);
 
   const onTabClick = editorName => {
@@ -76,8 +76,8 @@ function App() {
 
   return (
     <div className="App">
-      <p>Welcome to Web Code Editor ！</p>
-      {/* <div className="tab-button-container">
+      {/* <p>Welcome to Web Code Editor ！</p>
+      <div className="tab-button-container">
         <Button
           title="HTML"
           onClick={() => {
@@ -102,25 +102,25 @@ function App() {
             onTabClick('python');
           }}
         />
-      </div> */}
+      </div>
 
-      <br />
+      <br /> */}
 
       <div>
-            <div className="pane_editor">
-            <div style={{width: '1000px',height:'100%'}}>
-              {openedEditor === 'html' ? (
-                <Editor language="xml" value={html} setEditorState={setHtml} />
-              ) : openedEditor === 'css' ? (
-                <Editor language="css" value={css} setEditorState={setCss} />
-              ) : openedEditor === 'python' ? (
-                <Editor language="python" value={python} setEditorState={setPython} />
-              ) : (
-                <Editor language="javascript" value={js} setEditorState={setJs} />
-              )
-              }
-              </div>
-              {/* <iframe
+        <div className="pane_editor">
+          <div style={{ width: '100vw', height: '100%' }}>
+            {openedEditor === 'html' ? (
+              <Editor language="xml" value={html} setEditorState={setHtml} />
+            ) : openedEditor === 'css' ? (
+              <Editor language="css" value={css} setEditorState={setCss} />
+            ) : openedEditor === 'python' ? (
+              <Editor language="python" value={python} setEditorState={setPython} />
+            ) : (
+              <Editor language="javascript" value={js} setEditorState={setJs} />
+            )
+            }
+          </div>
+          {/* <iframe
               srcDoc={srcDoc}
               title="output"
               sandbox="allow-scripts"
@@ -129,19 +129,19 @@ function App() {
               // height="100%"
             /> */}
 
-                <div className="pane_iframe">
-                  <iframe
-                    id="iframe"
-                    srcDoc={srcDoc}
-                    title="output"
-                    sandbox="allow-scripts allow-same-origin"
-                    frameBorder="0"
-                    width="100%"
-                    height="100%"
-                  />
-                </div> 
-            </div>
-          
+          <div className="pane_iframe">
+            <iframe
+              id="iframe"
+              srcDoc={srcDoc}
+              title="output"
+              sandbox="allow-scripts allow-same-origin"
+              frameBorder="0"
+              width="100%"
+              height="100%"
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   );
