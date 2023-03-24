@@ -13,7 +13,6 @@ componentDidMount(){
   let Storagedata=JSON.parse(localStorage.getItem('result.data: '))
   if (Storagedata){
     this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]));
-    console.log('hhhhhhhhhhhhhhhhhhh')
   }
   
 }
@@ -63,6 +62,8 @@ componentDidMount(){
   InputSubmit = async () => {
     const {InputValue} = this.state;
     console.log('传给后端的输入框数据value: ', InputValue);
+    message.destroy()
+    message.loading("Send Clone Request")
     let result = await reqInput(InputValue);
     console.log('result: ', result);
     console.log('result.data: ', result.data)
@@ -79,10 +80,11 @@ componentDidMount(){
       localStorage:result,
     })
     if (result.status === 200) {
-      message.success('输入框内容发送成功');
-      console.log('finish');
+      message.destroy()
+      message.success("Sucessful Clone")
     } else {
-      message.error('输入框发送出了一点问题');
+      message.destroy()
+      message.error('Error when clone');
     }
     //console.log('localstorage',localStorage)
   };

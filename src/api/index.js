@@ -74,10 +74,14 @@ export const getFile = params => {
 // };
 
 export const reqcontent =params => {
+  /**
+   * 保存文件并commit
+   */
   console.log(params)
   const file_content=params["file_content"];
   const reponame=params["reponame"];
   const file_rel_path=params["file_rel_path"];
+  const commit_message=params["commit_message"];
   console.log('接口里的编辑框数据file_content: ', file_content);
   console.log('接口里的编辑框数据reponame: ', reponame);
   console.log('接口里的编辑框数据rel_path: ', file_rel_path);
@@ -88,6 +92,7 @@ export const reqcontent =params => {
   data.append('reponame', reponame);
   data.append('file_rel_path', file_rel_path);
   data.append('file_content', fileContent);
+  data.append('commit_message',commit_message);
 	console.log(data)
   return instance({
     //url: '/write/file',

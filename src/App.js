@@ -77,7 +77,7 @@ function App() {
   return (
     <div className="App">
       <p>Welcome to Web Code Editor ！</p>
-      <div className="tab-button-container">
+      {/* <div className="tab-button-container">
         <Button
           title="HTML"
           onClick={() => {
@@ -102,7 +102,7 @@ function App() {
             onTabClick('python');
           }}
         />
-      </div>
+      </div> */}
 
       <br />
 
