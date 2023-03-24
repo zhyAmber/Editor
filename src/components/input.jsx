@@ -1,5 +1,5 @@
 import React from 'react';
-import { message } from 'antd';
+import { message,Input,Button } from 'antd';
 import { reqInput } from '../api';
 
 
@@ -42,20 +42,22 @@ class InputDemo extends React.Component {
         })
       }
       if (v.folders && v.folders.length > 0) {
+        const thisfoldercontent={
+          title: v.name,
+          key: v.rel_path
+        }
+        thisfoldercontent['children']=[]
         v.folders.forEach(i => {
-          obj.push({
+          thisfoldercontent['children'].push({
             title: i.name,
             key: i.rel_path,
             children: this.getData([i])
           })
         })
-      } else {
-        obj.push({
-          title: v.name,
-          key: v.rel_path,
-        })
+        obj.push(thisfoldercontent)
       }
     })
+    console.log("文件树",obj)
     return obj
   }
 
@@ -92,11 +94,13 @@ class InputDemo extends React.Component {
   render() {
     return (
       <div >
-        <input
+        Target Repository:
+        <Input
+          style={{width:"50%"}}
           value={this.state.InputValue}
           onChange={this.handleGetInputValue}
         />
-        <button type="primary" htmlType="submit" onClick={this.InputSubmit} onSubmit={this.InputSubmit}>Clone</button>
+        <Button type="primary" onClick={this.InputSubmit}>Clone</Button>
 
         {/* <div>
           <input
