@@ -1,7 +1,31 @@
 import React from 'react';
-import { message,Input,Button } from 'antd';
+import { message, Input, Button } from 'antd';
 import { reqInput } from '../api';
 
+export const getJsonToTree=(data) => {
+  // 此处返回json结构
+  // 在DirectoryTree使用时加【】
+  let obj={
+    title: data.name,
+    key: data.rel_path
+  }
+  // console.log(data, 'data');
+
+  if (data.type === "folder") {
+    obj['children']=[]
+    data.folders.forEach(i => {
+      obj.children.push(getJsonToTree(i))
+    })
+    data.files.forEach(i => {
+      obj.children.push(getJsonToTree(i))
+    })
+  }
+  if(obj.children&&obj.children.length===0){
+    delete obj.children
+  }
+
+  return obj
+}
 
 class InputDemo extends React.Component {
   state = {
@@ -10,10 +34,7 @@ class InputDemo extends React.Component {
   };
 
   componentDidMount() {
-    let Storagedata = JSON.parse(localStorage.getItem('result.data: '))
-    if (Storagedata) {
-      this.props.getTreeData(Storagedata.reponame, this.getData([Storagedata.foldertree]));
-    }
+
 
   }
 
@@ -27,38 +48,8 @@ class InputDemo extends React.Component {
   };
 
 
-  getData = (data) => {
-    let obj = []
-    console.log(data, 'data');
-    data.forEach(v => {
-
-      //文件
-      if (v.files && v.files.length > 0) {
-        v.files.forEach(v => {
-          obj.push({
-            title: v.name,
-            key: v.rel_path
-          })
-        })
-      }
-      if (v.folders && v.folders.length > 0) {
-        const thisfoldercontent={
-          title: v.name,
-          key: v.rel_path
-        }
-        thisfoldercontent['children']=[]
-        v.folders.forEach(i => {
-          thisfoldercontent['children'].push({
-            title: i.name,
-            key: i.rel_path,
-            children: this.getData([i])
-          })
-        })
-        obj.push(thisfoldercontent)
-      }
-    })
-    console.log("文件树",obj)
-    return obj
+  getData = (data)=>{
+    return getJsonToTree(data)
   }
 
   InputSubmit = async () => {
@@ -76,9 +67,12 @@ class InputDemo extends React.Component {
       message.destroy()
       message.success("Sucessful Clone")
       localStorage.setItem('result.data: ', JSON.stringify(result.data))
-      this.props.getTreeData(result.data.reponame, this.getData([result.data.foldertree]))
+      const foldertreejson=this.getData(result.data.foldertree)
+      console.log("文档树结构2",foldertreejson)
+      this.props.getTreeData(result.data.reponame, foldertreejson)
+
       // localStorage.setItem('result.data: ', JSON.stringify(result.data))
-      //this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]))
+      //this.props.getTreeData(Storagedata.reponame,this.getData(Storagedata.foldertree))
       this.setState({
         content: result.data.foldertree.files,
         localStorage: result,
@@ -96,7 +90,7 @@ class InputDemo extends React.Component {
       <div >
         Target Repository:
         <Input
-          style={{width:"50%"}}
+          style={{ width: "50%" }}
           value={this.state.InputValue}
           onChange={this.handleGetInputValue}
         />

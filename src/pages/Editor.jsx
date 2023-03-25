@@ -28,19 +28,30 @@ import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
 import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio } from 'antd';
 import { reqcontent, getFile, pushcontent, pullcontent } from '../api';
-import InputDemo from '../components/input';
+import InputDemo, { getJsonToTree } from '../components/input';
+
 
 const { DirectoryTree } = Tree;
 
+const getInitialTree=()=>{
+  // 从localstorage获取文件树json，使用时包裹【】
+  let Storagedata = JSON.parse(localStorage.getItem('result.data: '))
+  if (Storagedata) {
+    const foldertreejson=getJsonToTree(Storagedata.foldertree)
+    return foldertreejson
+  }
+  return {}
+}
+
 const Editor = ({ language, value, setEditorState }) => {
-  const [submitinfo, setSubmitinfo] = useState();
+  const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem",null);
   const [theme, setTheme] = useState('dracula');
-  const [cloneName, setCloneName] = useState();
-  const [treeData, setTreeData] = useState([]);
+  const [cloneName, setCloneName] = useLocalStorage("lastposiname","");
+  const [treeData, setTreeData] = useState(getInitialTree());
   const [cursor, setCursor] = useState({ line: 0, ch: 0 })
   const [key, setKey] = useState(1)
   const [commitmsg, setCommitmsg] = useState("chore: Commit by Editor")
-  const [viewmode,setViewmode]=useState("code") // code, commit
+  const [viewmode,setViewmode]=useState("code") // 'code' or 'commit'
   // commit历史信息
   const [commithistory, setCommithistory] = useLocalStorage("commithis", false)
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
@@ -172,7 +183,7 @@ const Editor = ({ language, value, setEditorState }) => {
 
   const onSelect = (keys, info) => {
     console.log('infoinfo', info)
-    console.log('Trigger Select', keys, info);
+    console.log('Trigger Select', keys);
     console.log('info', info.node.key);
     setSubmitinfo(info.node.key);
     //localStorage.setItem('result.data: ', JSON.stringify(info.node))
@@ -200,10 +211,6 @@ const Editor = ({ language, value, setEditorState }) => {
 
   };
 
-  const onExpand = (keys, info) => {
-    console.log('Trigger Expand', keys, info);
-  };
-
 
   const getTreeData = (name, data) => {
     setCloneName(name)
@@ -228,11 +235,11 @@ const Editor = ({ language, value, setEditorState }) => {
         <Row>
         <Col span={6}>
           <DirectoryTree
-            multiple
-            defaultExpandAll={true}
+            defaultExpandedKeys={submitinfo?[submitinfo]:[]}
+            defaultSelectedKeys={submitinfo?[submitinfo]:[]}
+            blockNode={true}
             onSelect={onSelect}
-            onExpand={onExpand}
-            treeData={treeData}
+            treeData={[treeData]}
           />
         </Col>
         <Col span={18}>

@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Button from './components/Button';
 import Editor from './pages/Editor';
+import useLocalStorage from './hooks/useLocalStorage';
 // import {reqInput} from './api'
 
 
 function App() {
-  const [html, setHtml] = useState(localStorage.getItem('content') || '');
+  const [html, setHtml] = useLocalStorage("content","");
   const [css, setCss] = useState(`
     .selected {
       background-color: #ccc

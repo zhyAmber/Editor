@@ -2,6 +2,7 @@ import axios from 'axios';
 import storageUtils from '../utils/storageUtils';
 
 let BASEURL
+console.log("env: ",process.env.NODE_ENV)
 if(process.env.NODE_ENV==="production"){
   // 部署环境
   BASEURL = 'http://114.115.249.201:30004'
