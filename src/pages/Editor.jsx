@@ -26,10 +26,9 @@ import 'codemirror/addon/search/search.js'
 //代码高亮
 import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
-import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio } from 'antd';
+import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio, Dropdown } from 'antd';
 import { reqcontent, getFile, pushcontent, pullcontent } from '../api';
 import InputDemo, { getJsonToTree } from '../components/input';
-
 
 const { DirectoryTree } = Tree;
 
@@ -228,9 +227,9 @@ const Editor = ({ language, value, setEditorState }) => {
         <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
         </div>
       </Form>
-      <br />
+      
       <Row>
-        <div style={{margin:'0 auto'}}>
+        <div style={{margin:'10px auto'}}>
         <Radio.Group 
         value={viewmode} 
         size={'large'}
@@ -269,17 +268,15 @@ const Editor = ({ language, value, setEditorState }) => {
                 </div> */}
 
                   <div style={{ marginBottom: '10px' }}>
-                    <label htmlFor="cars">choose Style: </label>
-                    <select
-                      name="theme"
-                      onChange={el => {
-                        setTheme(el.target.value);
-                      }}
-                    >
-                      {themeArray.map(theme => (
-                        <option value={theme}>{theme}</option>
-                      ))}
-                    </select>
+                    Playground Style:
+                    <Dropdown
+                    menu={{'items':themeArray.map(theme=>{
+                      return {
+                        'label':theme,
+                        'key':theme
+                      }
+                    })}}
+                    ><a style={{paddingLeft:10}}>{theme}</a></Dropdown>
                   </div>
 
 
