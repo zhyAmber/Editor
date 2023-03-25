@@ -76,7 +76,6 @@ const InputDemo = (props) => {
 
   return (
     <div >
-      Target Repository:
       <Input
         style={{ width: "50%" }}
         value={InputValue}

@@ -33,25 +33,25 @@ import InputDemo, { getJsonToTree } from '../components/input';
 
 const { DirectoryTree } = Tree;
 
-const getInitialTree=()=>{
+const getInitialTree = () => {
   // 从localstorage获取文件树json，使用时包裹【】
   let Storagedata = JSON.parse(localStorage.getItem('result.data: '))
   if (Storagedata) {
-    const foldertreejson=getJsonToTree(Storagedata.foldertree)
+    const foldertreejson = getJsonToTree(Storagedata.foldertree)
     return foldertreejson
   }
   return {}
 }
 
 const Editor = ({ language, value, setEditorState }) => {
-  const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem",null);
+  const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem", null);
   const [theme, setTheme] = useState('dracula');
-  const [cloneName, setCloneName] = useLocalStorage("lastposiname","");
+  const [cloneName, setCloneName] = useLocalStorage("lastposiname", "");
   const [treeData, setTreeData] = useState(getInitialTree());
   const [cursor, setCursor] = useState({ line: 0, ch: 0 })
   const [key, setKey] = useState(1)
   const [commitmsg, setCommitmsg] = useState("chore: Commit by Editor")
-  const [viewmode,setViewmode]=useState("code") // 'code' or 'commit'
+  const [viewmode, setViewmode] = useState("code") // 'code' or 'commit'
   // commit历史信息
   const [commithistory, setCommithistory] = useLocalStorage("commithis", false)
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
@@ -61,10 +61,10 @@ const Editor = ({ language, value, setEditorState }) => {
     // localStorage.setItem('content',JSON.stringify(value))
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     const codemirrorDom = document.getElementsByClassName('CodeMirror')[0]
-    codemirrorDom.setAttribute("style","height: 100%")
-  },[])
+    codemirrorDom.setAttribute("style", "height: 100%")
+  }, [])
 
   window.onIframeCallback = function ({ index, tagName }) {
     document.getElementById('iframe').blur()
@@ -219,34 +219,45 @@ const Editor = ({ language, value, setEditorState }) => {
 
   return (
     <Layout>
+      <div style={{ textAlign: 'center', fontSize:20 }}>
+        <h1>AIDevOps</h1>
+      </div>
+
       <Form>
+        <div style={{textAlign:'center'}}>
         <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
+        </div>
       </Form>
-      <br/>
+      <br />
       <Row>
-      <Radio.Group value={viewmode} onChange={(e)=>{
-        setViewmode(e.target.value)
-      }}>
-        <Radio.Button value="code">Codes</Radio.Button>
-        <Radio.Button value="commit">Commits</Radio.Button>
-      </Radio.Group>
+        <div style={{margin:'0 auto'}}>
+        <Radio.Group 
+        value={viewmode} 
+        size={'large'}
+        onChange={(e) => {
+          setViewmode(e.target.value)
+        }}>
+          <Radio.Button value="code">Codes</Radio.Button>
+          <Radio.Button value="commit">Commits</Radio.Button>
+        </Radio.Group>
+        </div>
       </Row>
-      {viewmode==="code"?(
+      {viewmode === "code" ? (
         <Row>
-        <Col span={6}>
-          <DirectoryTree
-            defaultExpandedKeys={submitinfo?[submitinfo]:[]}
-            defaultSelectedKeys={submitinfo?[submitinfo]:[]}
-            blockNode={true}
-            onSelect={onSelect}
-            treeData={[treeData]}
-          />
-        </Col>
-        <Col span={18}>
-          <Form>
-            <Form.Item name="content">
-              <div>
-                {/* 上传文件
+          <Col span={6}>
+            <DirectoryTree
+              defaultExpandedKeys={submitinfo ? [submitinfo] : []}
+              defaultSelectedKeys={submitinfo ? [submitinfo] : []}
+              blockNode={true}
+              onSelect={onSelect}
+              treeData={[treeData]}
+            />
+          </Col>
+          <Col span={18}>
+            <Form>
+              <Form.Item name="content">
+                <div>
+                  {/* 上传文件
                 <div>
                   <input
                     type="file"
@@ -257,90 +268,90 @@ const Editor = ({ language, value, setEditorState }) => {
                   ></input>
                 </div> */}
 
-                <div style={{ marginBottom: '10px' }}>
-                  <label htmlFor="cars">choose Style: </label>
-                  <select
-                    name="theme"
-                    onChange={el => {
-                      setTheme(el.target.value);
-                    }}
-                  >
-                    {themeArray.map(theme => (
-                      <option value={theme}>{theme}</option>
-                    ))}
-                  </select>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label htmlFor="cars">choose Style: </label>
+                    <select
+                      name="theme"
+                      onChange={el => {
+                        setTheme(el.target.value);
+                      }}
+                    >
+                      {themeArray.map(theme => (
+                        <option value={theme}>{theme}</option>
+                      ))}
+                    </select>
+                  </div>
+
+
                 </div>
 
+                <div className='editor-container'>
+                  {/* 代码编辑框和显示 */}
+                  <ControlledEditorComponent
+                    key={key}
+                    cursor={cursor}
+                    onCursor={(editor, data) => {
+                      console.log(data)
+                      setCursor(data)
+                    }}
+                    onBeforeChange={handleChange}
+                    value={value}
+                    autoScroll="true"
+                    //className="code-mirror-wrapper"
+                    options={{
+                      lineWrapping: true, // 代码自动换行
+                      lint: true,
+                      mode: language,// 语言
+                      lineNumbers: true, // 显示行号,
+                      theme: theme,//主题
+                      autoCloseTags: true,
+                      autoCloseBrackets: true,//标签自动闭合
+                      autofocus: true, // 自动获取焦点
+                      focus: true,
+                      styleActiveLine: true, // 光标代码高亮
+                      styleActiveSelected: true,
+                      showCursorWhenSelecting: true
+                    }}
+                  />
+                </div>
+              </Form.Item>
 
-              </div>
+              <Form.Item>
+                <Button type="primary" onClick={onPull}>
+                  Pull
+                </Button>
+              </Form.Item>
 
-              <div className='editor-container'>
-                {/* 代码编辑框和显示 */}
-                <ControlledEditorComponent
-                  key={key}
-                  cursor={cursor}
-                  onCursor={(editor, data) => {
-                    console.log(data)
-                    setCursor(data)
-                  }}
-                  onBeforeChange={handleChange}
-                  value={value}
-                  autoScroll="true"
-                  //className="code-mirror-wrapper"
-                  options={{
-                    lineWrapping: true, // 代码自动换行
-                    lint: true,
-                    mode: language,// 语言
-                    lineNumbers: true, // 显示行号,
-                    theme: theme,//主题
-                    autoCloseTags: true,
-                    autoCloseBrackets: true,//标签自动闭合
-                    autofocus: true, // 自动获取焦点
-                    focus: true,
-                    styleActiveLine: true, // 光标代码高亮
-                    styleActiveSelected: true,
-                    showCursorWhenSelecting: true
-                  }}
-                />
-              </div>
-            </Form.Item>
+              <Form.Item>
+                <Row>
+                  <Col>
+                    <Input
+                      value={commitmsg}
+                      onChange={(e) => {
+                        e.persist()
+                        setCommitmsg(e.target.value)
+                      }} />
+                  </Col>
+                  <Col>
+                    <Button type="primary" onClick={onFinish}>
+                      Save & Submit
+                    </Button>
+                  </Col>
+                </Row>
+              </Form.Item>
 
-            <Form.Item>
-              <Button type="primary" onClick={onPull}>
-                Pull
-              </Button>
-            </Form.Item>
-
-            <Form.Item>
-              <Row>
-                <Col>
-                  <Input
-                    value={commitmsg}
-                    onChange={(e) => {
-                      e.persist()
-                      setCommitmsg(e.target.value)
-                    }} />
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={onFinish}>
-                    Save & Submit
-                  </Button>
-                </Col>
-              </Row>
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" onClick={onPush}>
-                Push
-              </Button>
-            </Form.Item>
-          </Form>
+              <Form.Item>
+                <Button type="primary" onClick={onPush}>
+                  Push
+                </Button>
+              </Form.Item>
+            </Form>
 
 
-        </Col>
+          </Col>
 
-      </Row>
-      ):(
+        </Row>
+      ) : (
         <CommitTab commithistory={commithistory} />
       )}
 
@@ -353,7 +364,7 @@ export default Editor;
 /**
  * 包含历史commit信息
  */
-const CommitTab = ({commithistory}) => {
+const CommitTab = ({ commithistory }) => {
   return (
     <div style={{ maxHeight: '700px', overflow: 'auto', paddingLeft: '30px' }}>{commithistory ? <List
       itemLayout="horizontal"
@@ -361,7 +372,9 @@ const CommitTab = ({commithistory}) => {
       renderItem={(item, index) => (
         <List.Item>
           <List.Item.Meta
-            title={<a onClick={() => {
+            title={<a 
+              style={{fontSize:'16px'}}
+              onClick={() => {
               message.destroy()
               message.warn("点击标题check out还没写完")
             }

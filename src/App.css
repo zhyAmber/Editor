@@ -5,16 +5,29 @@
 /* .editor-container{
   padding-top: 0.4%;
 } */
-.pane_iframe {
-  height: 100vh;
-  WIDTH: 105.3vh;
-  display: flex;
-  margin-right: 0
+
+.App{
+  width: 100%;
+  height: 100%;
 }
 
+/* 总窗口 */
 .pane_editor {
   height: 100vh;
-  WIDTH: 100%;
+  width: 100%;
+  display: flex;
+}
+
+/* 左侧窗口 */
+.pane_code{
+  height: 100vh;
+  width: 50vw;
+}
+
+/* 右侧窗口 */
+.pane_iframe {
+  height: 100vh;
+  width: 50vw;
   display: flex;
 }
 

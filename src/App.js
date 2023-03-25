@@ -3,6 +3,9 @@ import './App.css';
 import Button from './components/Button';
 import Editor from './pages/Editor';
 import useLocalStorage from './hooks/useLocalStorage';
+import {
+  MenuOutlined
+} from '@ant-design/icons';
 // import {reqInput} from './api'
 
 
@@ -41,6 +44,9 @@ function App() {
   const [srcDoc, setSrcDoc] = useState('');
   const Conversion = "\\";
 
+  // 空字符串：用户想在页面右边看html代码
+  // 有字符串：用户想要在页面右边看到他们的网站
+  const [htmlorweb,setHtmlorweb]=useLocalStorage("usehtmlorweb","")
 
 
   //   <html>
@@ -106,10 +112,8 @@ function App() {
       </div>
 
       <br /> */}
-
-      <div>
         <div className="pane_editor">
-          <div style={{ width: '100vw', height: '100%' }}>
+          <div className="pane_code">
             {openedEditor === 'html' ? (
               <Editor language="xml" value={html} setEditorState={setHtml} />
             ) : openedEditor === 'css' ? (
@@ -120,6 +124,11 @@ function App() {
               <Editor language="javascript" value={js} setEditorState={setJs} />
             )
             }
+
+            <div style={{position:'absolute',left:5,top:0,fontSize:20,zIndex:999}} onClick={()=>{
+              const res=window.prompt("Please input your web url",htmlorweb)
+              setHtmlorweb(res||"")
+            }}><MenuOutlined /></div>
           </div>
           {/* <iframe
               srcDoc={srcDoc}
@@ -131,7 +140,7 @@ function App() {
             /> */}
 
           <div className="pane_iframe">
-            <iframe
+            {htmlorweb&&htmlorweb.length===0?(<iframe
               id="iframe"
               srcDoc={srcDoc}
               title="output"
@@ -139,11 +148,14 @@ function App() {
               frameBorder="0"
               width="100%"
               height="100%"
-            />
+            />):<iframe
+              id="iframeweb"
+              style={{width:'100%'}}
+              src={htmlorweb}
+            ></iframe>}
+            
           </div>
         </div>
-
-      </div>
     </div>
   );
 }
