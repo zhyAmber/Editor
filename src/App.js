@@ -127,7 +127,9 @@ function App() {
 
             <div style={{position:'absolute',left:5,top:0,fontSize:20,zIndex:999}} onClick={()=>{
               const res=window.prompt("Please input your web url",htmlorweb)
-              setHtmlorweb(res)
+              if(typeof res==="string"){
+                setHtmlorweb(res)
+              }
             }}><MenuOutlined /></div>
           </div>
           {/* <iframe
