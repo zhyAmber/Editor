@@ -127,7 +127,7 @@ function App() {
 
             <div style={{position:'absolute',left:5,top:0,fontSize:20,zIndex:999}} onClick={()=>{
               const res=window.prompt("Please input your web url",htmlorweb)
-              setHtmlorweb(res||"")
+              setHtmlorweb(res)
             }}><MenuOutlined /></div>
           </div>
           {/* <iframe
@@ -140,7 +140,7 @@ function App() {
             /> */}
 
           <div className="pane_iframe">
-            {htmlorweb&&htmlorweb.length===0?(<iframe
+            {htmlorweb.length===0?(<iframe
               id="iframe"
               srcDoc={srcDoc}
               title="output"
