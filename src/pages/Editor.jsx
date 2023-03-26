@@ -26,7 +26,8 @@ import 'codemirror/addon/search/search.js'
 //代码高亮
 import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
-import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio, Dropdown } from 'antd';
+import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio, Dropdown, Empty } from 'antd';
+import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { reqcontent, getFile, pushcontent, pullcontent } from '../api';
 import InputDemo, { getJsonToTree } from '../components/input';
 
@@ -39,7 +40,7 @@ const getInitialTree = () => {
     const foldertreejson = getJsonToTree(Storagedata.foldertree)
     return foldertreejson
   }
-  return {}
+  return null
 }
 
 const Editor = ({ language, value, setEditorState }) => {
@@ -51,6 +52,8 @@ const Editor = ({ language, value, setEditorState }) => {
   const [key, setKey] = useState(1)
   const [commitmsg, setCommitmsg] = useState("chore: Commit by Editor")
   const [viewmode, setViewmode] = useState("code") // 'code' or 'commit'
+  // 设置左侧代码区宽度
+  const [leftwidth, setLeftwidth] = useState(8)
   // commit历史信息
   const [commithistory, setCommithistory] = useLocalStorage("commithis", false)
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
@@ -138,23 +141,16 @@ const Editor = ({ language, value, setEditorState }) => {
     console.log('传给后端的编辑框数据reponame: ', cloneName);
     message.destroy()
     message.loading("send push request")
-    pushcontent({
-      reponame: cloneName
-    }).then(res => {
-      if (res.status === 200) {
-        message.destroy()
-        message.success("successful push")
-      }
-      console.log('result :', res.data)
-    })
-    // let result = await reqcontent(value);
-    // console.log('result: ', result);
-    // if (result.status === 200) {
-    //   message.success('编辑框内容发送成功');
-    //   console.log('finish');
-    // } else {
-    //   message.error('编辑框发送出了一点问题');
-    // }
+    // pushcontent({
+    //   reponame: cloneName
+    // }).then(res => {
+    //   if (res.status === 200) {
+    //     message.destroy()
+    //     message.success("successful push")
+    //   }
+    //   console.log('result :', res.data)
+    // })
+
   };
   const onPull = async () => {
     console.log('传给后端的编辑框数据reponame: ', cloneName);
@@ -187,26 +183,35 @@ const Editor = ({ language, value, setEditorState }) => {
     setSubmitinfo(info.node.key);
     //localStorage.setItem('result.data: ', JSON.stringify(info.node))
     //console.log("submit",submitinfo)
-    getFile({
-      file_rel_path: info.node.key,
-      reponame: cloneName
-    }).then(res => {
-      if (info.node.title.includes('html')) {
-        res && setEditorState(res.data)
-      }
-      if (info.node.title.includes('json')) {
-        res && setEditorState(JSON.stringify(res.data))
-      }
-      else {
-        res && setEditorState(JSON.parse(JSON.stringify(res.data)))
-      }
-      // if(info.node.title.includes('json')){
-      //   res&& setEditorState(JSON.stringify(res.data))
-      // }
-      // else{
-      // res&& setEditorState(res.data)
-      // }
-    })
+    // 如果是页子，请求内容
+    if (info.node.isLeaf) {
+      getFile({
+        file_rel_path: info.node.key,
+        reponame: cloneName
+      }).then(res => {
+        // if (info.node.title+"".includes('html')) {
+        // res && setEditorState(res.data)
+        // }
+        // if (info.node.title.includes('json')) {
+        //   res && setEditorState(JSON.stringify(res.data))
+        // }
+        // else {
+        //   res && setEditorState(JSON.parse(JSON.stringify(res.data)))
+        // }
+
+        setEditorState(res.data)
+
+        // if(info.node.title.includes('json')){
+        //   res&& setEditorState(JSON.stringify(res.data))
+        // }
+        // else{
+        // res&& setEditorState(res.data)
+        // }
+      })
+    } else {
+      // 文件夹直接默认展开
+    }
+
 
   };
 
@@ -218,41 +223,67 @@ const Editor = ({ language, value, setEditorState }) => {
 
   return (
     <Layout>
-      <div style={{ textAlign: 'center', fontSize:20 }}>
+      <div style={{ textAlign: 'center', fontSize: 20, position: 'relative' }}>
         <h1>AIDevOps</h1>
+        <div style={{ position: 'absolute', right: 5, top: 0, fontSize: 20, zIndex: 999, cursor: 'pointer' }}
+          className='hoverbox'
+          onClick={() => {
+            const res = window.confirm("This will delete all localstorage of this site")
+            if (res) {
+              localStorage.clear()
+              window.location.reload()
+            }
+          }}
+        ><DeleteOutlined /></div>
       </div>
 
       <Form>
-        <div style={{textAlign:'center'}}>
-        <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
+        <div style={{ textAlign: 'center' }}>
+          <InputDemo getTreeData={getTreeData} setCommitHis={setCommithistory} />
         </div>
       </Form>
-      
+
       <Row>
-        <div style={{margin:'10px auto'}}>
-        <Radio.Group 
-        value={viewmode} 
-        size={'large'}
-        onChange={(e) => {
-          setViewmode(e.target.value)
-        }}>
-          <Radio.Button value="code">Codes</Radio.Button>
-          <Radio.Button value="commit">Commits</Radio.Button>
-        </Radio.Group>
+        <div style={{ margin: '10px auto' }}>
+          <Radio.Group
+            value={viewmode}
+            size={'large'}
+            onChange={(e) => {
+              setViewmode(e.target.value)
+            }}>
+            <Radio.Button value="code">Codes</Radio.Button>
+            <Radio.Button value="commit">Commits</Radio.Button>
+          </Radio.Group>
         </div>
       </Row>
+      {viewmode === "code"?(<div style={{ position: 'relative' }}>
+        <div style={{ position:'absolute',left:5,top:-35, fontSize: 20, zIndex: 999, cursor: 'pointer' }}
+          className='hoverbox'
+          onClick={()=>{
+            if(leftwidth>0){
+              setLeftwidth(0)
+            }else{
+              setLeftwidth(8)
+            }
+          }}
+        >
+          {leftwidth > 0 ? <LeftOutlined /> : <RightOutlined />}
+        </div>
+      </div>):(<></>)}
+      
       {viewmode === "code" ? (
         <Row>
-          <Col span={6}>
+          <Col span={leftwidth}>
             <DirectoryTree
+              showIcon={false}
               defaultExpandedKeys={submitinfo ? [submitinfo] : []}
               defaultSelectedKeys={submitinfo ? [submitinfo] : []}
               blockNode={true}
               onSelect={onSelect}
-              treeData={[treeData]}
+              treeData={treeData ? [treeData] : []}
             />
           </Col>
-          <Col span={18}>
+          <Col span={24 - leftwidth}>
             <Form>
               <Form.Item name="content">
                 <div>
@@ -270,13 +301,15 @@ const Editor = ({ language, value, setEditorState }) => {
                   <div style={{ marginBottom: '10px' }}>
                     Playground Style:
                     <Dropdown
-                    menu={{'items':themeArray.map(theme=>{
-                      return {
-                        'label':theme,
-                        'key':theme
-                      }
-                    })}}
-                    ><a style={{paddingLeft:10}}>{theme}</a></Dropdown>
+                      menu={{
+                        'items': themeArray.map(theme => {
+                          return {
+                            'label': theme,
+                            'key': theme
+                          }
+                        })
+                      }}
+                    ><a style={{ paddingLeft: 10 }}>{theme}</a></Dropdown>
                   </div>
 
 
@@ -312,36 +345,37 @@ const Editor = ({ language, value, setEditorState }) => {
                   />
                 </div>
               </Form.Item>
+              <Row justify={"space-around"}>
+                <Form.Item>
+                  <Button type="primary" onClick={onPull}>
+                    Pull
+                  </Button>
+                </Form.Item>
 
-              <Form.Item>
-                <Button type="primary" onClick={onPull}>
-                  Pull
-                </Button>
-              </Form.Item>
+                <Form.Item>
+                  <Row>
+                    <Col>
+                      <Input
+                        value={commitmsg}
+                        onChange={(e) => {
+                          e.persist()
+                          setCommitmsg(e.target.value)
+                        }} />
+                    </Col>
+                    <Col>
+                      <Button type="primary" onClick={onFinish}>
+                        Save & Submit
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form.Item>
 
-              <Form.Item>
-                <Row>
-                  <Col>
-                    <Input
-                      value={commitmsg}
-                      onChange={(e) => {
-                        e.persist()
-                        setCommitmsg(e.target.value)
-                      }} />
-                  </Col>
-                  <Col>
-                    <Button type="primary" onClick={onFinish}>
-                      Save & Submit
-                    </Button>
-                  </Col>
-                </Row>
-              </Form.Item>
-
-              <Form.Item>
-                <Button type="primary" onClick={onPush}>
-                  Push
-                </Button>
-              </Form.Item>
+                <Form.Item>
+                  <Button type="primary" onClick={onPush}>
+                    Push
+                  </Button>
+                </Form.Item>
+              </Row>
             </Form>
 
 
@@ -369,13 +403,13 @@ const CommitTab = ({ commithistory }) => {
       renderItem={(item, index) => (
         <List.Item>
           <List.Item.Meta
-            title={<a 
-              style={{fontSize:'16px'}}
+            title={<a
+              style={{ fontSize: '16px' }}
               onClick={() => {
-              message.destroy()
-              message.warn("点击标题check out还没写完")
-            }
-            }>
+                message.destroy()
+                message.warn("点击标题check out还没写完")
+              }
+              }>
               {item.title}
             </a>}
             description={item.time}
@@ -385,6 +419,6 @@ const CommitTab = ({ commithistory }) => {
           {item.hash}
         </List.Item>
       )}
-    /> : "no history commits"}</div>
+    /> : <Empty />}</div>
   )
 }

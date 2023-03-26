@@ -125,7 +125,9 @@ function App() {
             )
             }
 
-            <div style={{position:'absolute',left:5,top:0,fontSize:20,zIndex:999}} onClick={()=>{
+            <div style={{position:'absolute',left:5,top:0,fontSize:20,zIndex:999,cursor:'pointer'}} 
+            className='hoverbox'
+            onClick={()=>{
               const res=window.prompt("Please input your web url",htmlorweb)
               if(typeof res==="string"){
                 setHtmlorweb(res)

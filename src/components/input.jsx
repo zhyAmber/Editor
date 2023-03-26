@@ -1,13 +1,19 @@
 import React,{useState} from 'react';
-import { message, Input, Button } from 'antd';
+import { message, Input, Button, notification } from 'antd';
 import { reqInput } from '../api';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { FolderOutlined,FileOutlined } from '@ant-design/icons';
 
 export const getJsonToTree = (data) => {
   // 此处返回json结构
   // 在DirectoryTree使用时加【】
   let obj = {
-    title: data.name,
+    title: <div style={{
+      display:'inline-block',
+      whiteSpace:'nowrap',
+      overflow:'hidden',
+      textOverflow:'ellipsis'
+    }}>{data.type==="folder"?<FolderOutlined />:<FileOutlined />}{" "+data.name}</div>,
     key: data.rel_path
   }
   // console.log(data, 'data');
@@ -20,6 +26,9 @@ export const getJsonToTree = (data) => {
     data.files.forEach(i => {
       obj.children.push(getJsonToTree(i))
     })
+  }else{
+    obj['isLeaf']=true
+    obj['icon']=<div></div>
   }
   if (obj.children && obj.children.length === 0) {
     delete obj.children
@@ -47,7 +56,7 @@ const InputDemo = (props) => {
   const InputSubmit = async () => {
     console.log('传给后端的输入框数据value: ', InputValue);
     message.destroy()
-    message.loading("Send Clone Request")
+    message.loading("Send Clone Request",0)
     let result = await reqInput(InputValue);
     console.log('result: ', result);
     console.log('result.data: ', result.data)
@@ -56,7 +65,13 @@ const InputDemo = (props) => {
     // console.log('Storagedata',Storagedata)
     if (result.status === 200) {
       message.destroy()
-      message.success("Sucessful Clone")
+      notification.open({
+        message: <div style={{color:'green'}}>Clone successfully</div>,
+        description:<div><div>You have successfully cloned the repository:</div><div style={{fontWeight:'bolder'}}>{result.data.reponame}</div></div>,
+        onClick: () => {
+          console.log('Notification Clicked!');
+        },
+      })
       localStorage.setItem('result.data: ', JSON.stringify(result.data))
       const foldertreejson = getData(result.data.foldertree)
       console.log("文档树结构2", foldertreejson)
@@ -68,7 +83,7 @@ const InputDemo = (props) => {
       props.setCommitHis(result.data.logs)
     } else {
       message.destroy()
-      message.error('Error when clone');
+      message.error('Error when clone, please use ssh url');
     }
     //console.log('localstorage',localStorage)
   };
