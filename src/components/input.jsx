@@ -58,38 +58,44 @@ const InputDemo = (props) => {
     console.log('传给后端的输入框数据value: ', InputValue);
     message.destroy()
     message.loading("Send Clone Request",0)
-    let result = await reqInput(InputValue);
-    console.log('result: ', result);
-    console.log('result.data: ', result.data)
-    //let Storagedata=this.state.Storagedata
-    //let Storagedata=JSON.parse(localStorage.getItem('result.data: '))
-    // console.log('Storagedata',Storagedata)
-    if (result.status === 200) {
+    reqInput(InputValue).then(result=>{
+      console.log('clone result: ', result);
+      //let Storagedata=this.state.Storagedata
+      //let Storagedata=JSON.parse(localStorage.getItem('result.data: '))
+      // console.log('Storagedata',Storagedata)
+      if (result.status === 200) {
+        message.destroy()
+        notification.config({
+          placement: 'topLeft',
+          duration:3
+        });
+        notification.open({
+          message: <div style={{color:'green'}}>Clone successfully</div>,
+          description:(<div>
+            <div>You have successfully cloned the repository:</div>
+            <div style={{fontWeight:'bolder'}}>{result.data.reponame}</div>
+            <div>id of current commit:</div>
+            <div>{result.data.commitid}</div>
+          </div>),
+          onClick: () => {
+            console.log('Notification Clicked!');
+          },
+        })
+        localStorage.setItem('result.data: ', JSON.stringify(result.data))
+        const foldertreejson = getData(result.data.foldertree)
+        console.log("文档树结构2", foldertreejson)
+        props.getTreeData(result.data.reponame, foldertreejson)
+  
+        // localStorage.setItem('result.data: ', JSON.stringify(result.data))
+        //this.props.getTreeData(Storagedata.reponame,this.getData(Storagedata.foldertree))
+        // setContent(result.data.foldertree.files)
+        props.setCommitHis(result.data.logs)
+      }
+    }).catch((err)=>{
       message.destroy()
-      notification.config({
-        placement: 'topLeft',
-        duration:3
-      });
-      notification.open({
-        message: <div style={{color:'green'}}>Clone successfully</div>,
-        description:<div><div>You have successfully cloned the repository:</div><div style={{fontWeight:'bolder'}}>{result.data.reponame}</div></div>,
-        onClick: () => {
-          console.log('Notification Clicked!');
-        },
-      })
-      localStorage.setItem('result.data: ', JSON.stringify(result.data))
-      const foldertreejson = getData(result.data.foldertree)
-      console.log("文档树结构2", foldertreejson)
-      props.getTreeData(result.data.reponame, foldertreejson)
-
-      // localStorage.setItem('result.data: ', JSON.stringify(result.data))
-      //this.props.getTreeData(Storagedata.reponame,this.getData(Storagedata.foldertree))
-      setContent(result.data.foldertree.files)
-      props.setCommitHis(result.data.logs)
-    } else {
-      message.destroy()
-      message.error('Error when clone, please use ssh url');
-    }
+      message.error('Error when clone');
+    })
+    
     //console.log('localstorage',localStorage)
   };
 

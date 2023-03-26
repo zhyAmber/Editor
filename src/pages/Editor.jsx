@@ -130,6 +130,9 @@ const Editor = ({ language, value, setEditorState }) => {
         message.success("success commit")
       }
       console.log('result :', res.data)
+    }).catch((err)=>{
+      message.destroy()
+      message.error(err.response.data.msg)
     })
     // let result = await reqcontent(value);
     // console.log('result: ', result);
@@ -149,10 +152,21 @@ const Editor = ({ language, value, setEditorState }) => {
       reponame: cloneName
     }).then(res => {
       if (res.status === 200) {
+        // 设置树结构
+        setTreeData(getJsonToTree(res.data.foldertree))
+        // 当前commit
+        setCommitid(res.data.commitid)
+        // 编辑框清空
+        setEditorState("")
+        // 当前选中文件清空
+        setSubmitinfo("")
         message.destroy()
         message.success("successful pull")
       }
       console.log('result :', res.data)
+    }).catch((err)=>{
+      message.destroy()
+      message.error(err.response.data.msg)
     })
     // let result = await reqcontent(value);
     // console.log('result: ', result);
@@ -172,6 +186,7 @@ const Editor = ({ language, value, setEditorState }) => {
     pushcontent({
       reponame: cloneName
     }).then(res => {
+      console.log("respush",res)
       message.destroy()
       if (res.status === 200) {
         message.success("successful push",1,()=>{
@@ -184,9 +199,10 @@ const Editor = ({ language, value, setEditorState }) => {
             })
           })
         })
-      }else{
-        message.error(res.data.msg||"error")
       }
+    }).catch((error)=>{
+      message.destroy()
+      message.error(error.response.data.msg)
     })
 
   };
@@ -454,6 +470,9 @@ const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,set
                     message.destroy()
                     message.success("checkout to "+res.data.commitid)
                   }
+                }).catch((err)=>{
+                  message.destroy()
+                  message.error(err.response.data.msg)
                 })
 
               }
