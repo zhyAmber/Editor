@@ -28,7 +28,7 @@ import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
 import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio, Dropdown, Empty } from 'antd';
 import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { reqcontent, getFile, pushcontent, pullcontent } from '../api';
+import { reqcontent, getFile, pushcontent, pullcontent, getCommitLogs, checkOutto } from '../api';
 import InputDemo, { getJsonToTree } from '../components/input';
 
 const { DirectoryTree } = Tree;
@@ -44,18 +44,23 @@ const getInitialTree = () => {
 }
 
 const Editor = ({ language, value, setEditorState }) => {
+  // 被选中文件的路径
   const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem", null);
   const [theme, setTheme] = useState('dracula');
   const [cloneName, setCloneName] = useLocalStorage("lastposiname", "");
   const [treeData, setTreeData] = useState(getInitialTree());
   const [cursor, setCursor] = useState({ line: 0, ch: 0 })
   const [key, setKey] = useState(1)
+  // git commit时附带的message
   const [commitmsg, setCommitmsg] = useState("chore: Commit by Editor")
+  // 看代码还是看commits
   const [viewmode, setViewmode] = useState("code") // 'code' or 'commit'
   // 设置左侧代码区宽度
   const [leftwidth, setLeftwidth] = useState(8)
-  // commit历史信息
+  // commit历史信息列表
   const [commithistory, setCommithistory] = useLocalStorage("commithis", false)
+  // 现在所处commit id
+  const [commitid,setCommitid]=useState("")
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
   const handleChange = (editor, data, value) => {
     setEditorState(value);
@@ -136,23 +141,7 @@ const Editor = ({ language, value, setEditorState }) => {
     // }
   };
 
-  //Push到git仓库
-  const onPush = async () => {
-    console.log('传给后端的编辑框数据reponame: ', cloneName);
-    message.destroy()
-    message.loading("send push request")
-    // pushcontent({
-    //   reponame: cloneName
-    // }).then(res => {
-    //   if (res.status === 200) {
-    //     message.destroy()
-    //     message.success("successful push")
-    //   }
-    //   console.log('result :', res.data)
-    // })
-
-  };
-  const onPull = async () => {
+  const onPull = async (cloneName) => {
     console.log('传给后端的编辑框数据reponame: ', cloneName);
     message.destroy()
     message.loading("send pull request")
@@ -173,6 +162,33 @@ const Editor = ({ language, value, setEditorState }) => {
     // } else {
     //   message.error('编辑框发送出了一点问题');
     // }
+  };
+
+  //Push到git仓库
+  const onPush = async () => {
+    console.log('传给后端的编辑框数据reponame: ', cloneName);
+    message.destroy()
+    message.loading("send push request",0)
+    pushcontent({
+      reponame: cloneName
+    }).then(res => {
+      message.destroy()
+      if (res.status === 200) {
+        message.success("successful push",1,()=>{
+          message.loading("build docker images...",6,()=>{
+            message.success("successful build",1.5,()=>{
+              message.loading("deploying on kubernetes...",3,()=>{
+                message.success("Successful build and deploy",2)
+                document.querySelector("#iframe").contentWindow.location.reload()
+              })
+            })
+          })
+        })
+      }else{
+        message.error(res.data.msg||"error")
+      }
+    })
+
   };
 
 
@@ -250,6 +266,12 @@ const Editor = ({ language, value, setEditorState }) => {
             size={'large'}
             onChange={(e) => {
               setViewmode(e.target.value)
+              if(e.target.value==="commit"){
+                getCommitLogs({reponame:cloneName}).then((res)=>{
+                  setCommithistory(res.data.logs)
+                  setCommitid(res.data.commitid)
+                })
+              }
             }}>
             <Radio.Button value="code">Codes</Radio.Button>
             <Radio.Button value="commit">Commits</Radio.Button>
@@ -272,6 +294,7 @@ const Editor = ({ language, value, setEditorState }) => {
       </div>):(<></>)}
       
       {viewmode === "code" ? (
+        <div>
         <Row>
           <Col span={leftwidth}>
             <DirectoryTree
@@ -319,6 +342,7 @@ const Editor = ({ language, value, setEditorState }) => {
 
                 </div>
 
+                
                 <div className='editor-container'>
                   {/* 代码编辑框和显示 */}
                   <ControlledEditorComponent
@@ -349,45 +373,46 @@ const Editor = ({ language, value, setEditorState }) => {
                   />
                 </div>
               </Form.Item>
-              <Row justify={"space-around"}>
-                <Form.Item>
-                  <Button type="primary" onClick={onPull}>
-                    Pull
-                  </Button>
-                </Form.Item>
-
-                <Form.Item>
-                  <Row>
-                    <Col>
-                      <Input
-                        value={commitmsg}
-                        onChange={(e) => {
-                          e.persist()
-                          setCommitmsg(e.target.value)
-                        }} />
-                    </Col>
-                    <Col>
-                      <Button type="primary" onClick={onFinish}>
-                        Save & Submit
-                      </Button>
-                    </Col>
-                  </Row>
-                </Form.Item>
-
-                <Form.Item>
-                  <Button type="primary" onClick={onPush}>
-                    Push
-                  </Button>
-                </Form.Item>
-              </Row>
             </Form>
-
 
           </Col>
 
         </Row>
+
+        <Row justify={"space-around"}>
+        <Form.Item>
+          <Button type="primary" onClick={()=>{onPull(cloneName)}}>
+            Pull
+          </Button>
+        </Form.Item>
+
+        <Form.Item>
+          <Row>
+            <Col>
+              <Input
+                value={commitmsg}
+                onChange={(e) => {
+                  e.persist()
+                  setCommitmsg(e.target.value)
+                }} />
+            </Col>
+            <Col>
+              <Button type="primary" onClick={onFinish}>
+                Save & Commit
+              </Button>
+            </Col>
+          </Row>
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" onClick={onPush}>
+            Push
+          </Button>
+        </Form.Item>
+        </Row>
+        </div>
       ) : (
-        <CommitTab commithistory={commithistory} />
+        <CommitTab commithistory={commithistory} reponame={cloneName} setTreeData={setTreeData} commitid={commitid} setCommitid={setCommitid} setEditorState={setEditorState} setSubmitinfo={setSubmitinfo}/>
       )}
 
     </Layout>
@@ -399,7 +424,10 @@ export default Editor;
 /**
  * 包含历史commit信息
  */
-const CommitTab = ({ commithistory }) => {
+const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,setEditorState,setSubmitinfo }) => {
+
+  console.log(commitid)
+
   return (
     <div style={{ maxHeight: '700px', overflow: 'auto', paddingLeft: '30px' }}>{commithistory ? <List
       itemLayout="horizontal"
@@ -410,11 +438,27 @@ const CommitTab = ({ commithistory }) => {
             title={<a
               style={{ fontSize: '16px' }}
               onClick={() => {
-                message.destroy()
-                message.warn("点击标题check out还没写完")
+                checkOutto({
+                  'reponame':reponame,
+                  'hash':item.hash
+                }).then((res)=>{
+                  if(res.status===200){
+                    // 设置树结构
+                    setTreeData(getJsonToTree(res.data.foldertree))
+                    // 当前commit
+                    setCommitid(res.data.commitid)
+                    // 编辑框清空
+                    setEditorState("")
+                    // 当前选中文件清空
+                    setSubmitinfo("")
+                    message.destroy()
+                    message.success("checkout to "+res.data.commitid)
+                  }
+                })
+
               }
               }>
-              {item.title}
+              <div style={item.hash===commitid?{color:'green'}:{}}>{item.hash===commitid?"=>":""}{item.title}</div>
             </a>}
             description={item.time}
           />

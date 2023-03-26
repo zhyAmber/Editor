@@ -11,6 +11,7 @@ export const getJsonToTree = (data) => {
     title: <div style={{
       display:'inline-block',
       whiteSpace:'nowrap',
+      width:'100%',
       overflow:'hidden',
       textOverflow:'ellipsis'
     }}>{data.type==="folder"?<FolderOutlined />:<FileOutlined />}{" "+data.name}</div>,

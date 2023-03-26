@@ -36,6 +36,27 @@ export const getFile = params => {
   });
 };
 
+//点击Commit后获取commits内容
+export const getCommitLogs = params => {
+  const data=qs.stringify(params)
+  return instance({
+    url: '/show/gitlogs',
+    method: 'POST',
+    data:data
+  });
+};
+
+// 切换分支
+export const checkOutto = params => {
+  const data=qs.stringify(params)
+  return instance({
+    url: '/repo/checkout',
+    method: 'POST',
+    data:data
+  });
+};
+
+
 //submit编辑框内容
 // export const reqcontent = params => {
 //   const data=qs.stringify(params)
