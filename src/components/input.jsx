@@ -65,6 +65,10 @@ const InputDemo = (props) => {
     // console.log('Storagedata',Storagedata)
     if (result.status === 200) {
       message.destroy()
+      notification.config({
+        placement: 'topLeft',
+        duration:3
+      });
       notification.open({
         message: <div style={{color:'green'}}>Clone successfully</div>,
         description:<div><div>You have successfully cloned the repository:</div><div style={{fontWeight:'bolder'}}>{result.data.reponame}</div></div>,

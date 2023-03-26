@@ -301,11 +301,15 @@ const Editor = ({ language, value, setEditorState }) => {
                   <div style={{ marginBottom: '10px' }}>
                     Playground Style:
                     <Dropdown
+                    trigger={['click']}
                       menu={{
-                        'items': themeArray.map(theme => {
+                        'items': themeArray.map(thistheme => {
                           return {
-                            'label': theme,
-                            'key': theme
+                            'label': <div onClick={()=>{
+                              setTheme(thistheme)
+                            }}>{thistheme}</div>,
+                            'key': thistheme,
+                            
                           }
                         })
                       }}
