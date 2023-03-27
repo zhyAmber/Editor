@@ -65,10 +65,14 @@ const InputDemo = (props) => {
     if(newlist.length>5){
       newlist.splice(0,1)
     }
-    newlist.push({
-      'value':InputValue,
-      "label":InputValue
-    })
+    // 如果不包含此次仓库路径，添加进去
+    if(!newlist.map((each)=>{return each.value}).includes(InputValue)){
+      newlist.push({
+        'value':InputValue,
+        "label":InputValue
+      })
+    }
+
     setClonehislist(newlist)
     localStorage.setItem("clonelist",JSON.stringify(clonehislist))
     reqInput(InputValue).then(result=>{
