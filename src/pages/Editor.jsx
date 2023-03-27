@@ -66,7 +66,7 @@ const Editor = ({ language, value, setEditorState }) => {
   const [codelanguage,setCodelanguage]=useState("txt")
   // 被选中文件的路径
   const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem", null);
-  const [theme, setTheme] = useState('dracula');
+  const [theme, setTheme] = useLocalStorage("codetheme",'dracula');
   const [cloneName, setCloneName] = useLocalStorage("lastposiname", "");
   const [treeData, setTreeData] = useState(getInitialTree());
   const [cursor, setCursor] = useState({ line: 0, ch: 0 })
@@ -187,7 +187,10 @@ const Editor = ({ language, value, setEditorState }) => {
         // 当前选中文件清空
         setSubmitinfo("")
         message.destroy()
-        message.success("successful pull")
+        message.success("Successful pull",1,()=>{
+          window.location.reload()
+        })
+        
       }
       console.log('result :', res.data)
     }).catch((err)=>{
@@ -375,7 +378,8 @@ const Editor = ({ language, value, setEditorState }) => {
       
       {viewmode === "code" ? (
         <div>
-          <Row>
+        <Row>
+          <Col span={leftwidth} style={{height:'560px',overflow:'scroll'}}>
           <div style={{ marginBottom: '10px' }}>
                     Playground Style:
                     <Dropdown
@@ -393,9 +397,6 @@ const Editor = ({ language, value, setEditorState }) => {
                       }}
                     ><a style={{ paddingLeft: 10 }}>{theme}</a></Dropdown>
                   </div>
-          </Row>
-        <Row>
-          <Col span={leftwidth} style={{height:'560px',overflow:'scroll'}}>
             <DirectoryTree
               showIcon={false}
               defaultExpandedKeys={submitinfo ? [submitinfo] : []}
