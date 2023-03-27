@@ -1,5 +1,5 @@
-import React,{useState} from 'react';
-import { message, Input, Button, notification } from 'antd';
+import React,{useEffect, useState} from 'react';
+import { message, Input, Button, notification, Mentions } from 'antd';
 import { reqInput } from '../api';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { FolderOutlined,FileOutlined } from '@ant-design/icons';
@@ -41,14 +41,15 @@ export const getJsonToTree = (data,highlights=[]) => {
 const InputDemo = (props) => {
   const [InputValue, setInputValue] = useLocalStorage("clonedir", "git@github.com:zhyAmber/FYP.git")
   const [content, setContent] = useState("")
+  // 克隆的项目记录 [{value,label},{}]
+  const [clonehislist,setClonehislist]=useState([])
 
-  const handleGetInputValue = (event) => {
-    setInputValue(event.target.value)
-    //let Storagedata=JSON.parse(this.localStorage.getItem('result.data: '))
-    //  console.log("Storagedata",Storagedata)
-    // this.props.getTreeData(Storagedata.reponame,this.getData([Storagedata.foldertree]))
-  };
-
+  useEffect(()=>{
+    const clonelist=JSON.parse(localStorage.getItem("clonelist"))
+    if(clonelist){
+      setClonehislist(clonelist)
+    }
+  },[])
 
   const getData = (data) => {
     return getJsonToTree(data)
@@ -58,6 +59,18 @@ const InputDemo = (props) => {
     console.log('传给后端的输入框数据value: ', InputValue);
     message.destroy()
     message.loading("Send Clone Request",0)
+    // 存储此次clone
+    let newlist=clonehislist
+    console.log(newlist)
+    if(newlist.length>5){
+      newlist.splice(0,1)
+    }
+    newlist.push({
+      'value':InputValue,
+      "label":InputValue
+    })
+    setClonehislist(newlist)
+    localStorage.setItem("clonelist",JSON.stringify(clonehislist))
     reqInput(InputValue).then(result=>{
       console.log('clone result: ', result);
       //let Storagedata=this.state.Storagedata
@@ -102,10 +115,17 @@ const InputDemo = (props) => {
 
   return (
     <div >
-      <Input
+      <Mentions
         style={{ width: "50%" }}
+        options={[...clonehislist]}
+        onSelect={(obj)=>{
+          setInputValue(obj.value)
+        }}
+        onChange={(word)=>{
+          setInputValue(word)
+        }}
         value={InputValue}
-        onChange={handleGetInputValue}
+        prefix={['g']}
       />
       <Button type="primary" onClick={InputSubmit}>Clone</Button>
 
