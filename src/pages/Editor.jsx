@@ -311,33 +311,8 @@ const Editor = ({ language, value, setEditorState }) => {
       
       {viewmode === "code" ? (
         <div>
-        <Row>
-          <Col span={leftwidth}>
-            <DirectoryTree
-              showIcon={false}
-              defaultExpandedKeys={submitinfo ? [submitinfo] : []}
-              defaultSelectedKeys={submitinfo ? [submitinfo] : []}
-              blockNode={true}
-              onSelect={onSelect}
-              treeData={treeData ? [treeData] : []}
-            />
-          </Col>
-          <Col span={24 - leftwidth}>
-            <Form>
-              <Form.Item name="content">
-                <div>
-                  {/* 上传文件
-                <div>
-                  <input
-                    type="file"
-                    id="testJsonFile"
-                    onChange={event => {
-                      openFile(event);
-                    }}
-                  ></input>
-                </div> */}
-
-                  <div style={{ marginBottom: '10px' }}>
+          <Row>
+          <div style={{ marginBottom: '10px' }}>
                     Playground Style:
                     <Dropdown
                     trigger={['click']}
@@ -354,8 +329,32 @@ const Editor = ({ language, value, setEditorState }) => {
                       }}
                     ><a style={{ paddingLeft: 10 }}>{theme}</a></Dropdown>
                   </div>
-
-
+          </Row>
+        <Row>
+          <Col span={leftwidth} style={{height:'560px',overflow:'scroll'}}>
+            <DirectoryTree
+              showIcon={false}
+              defaultExpandedKeys={submitinfo ? [submitinfo] : []}
+              defaultSelectedKeys={submitinfo ? [submitinfo] : []}
+              blockNode={true}
+              onSelect={onSelect}
+              treeData={treeData ? [treeData] : []}
+            />
+          </Col>
+          <Col span={24 - leftwidth} style={{height:'560px',overflow:'scroll'}}>
+            <Form>
+              <Form.Item name="content">
+                <div>
+                  {/* 上传文件
+                <div>
+                  <input
+                    type="file"
+                    id="testJsonFile"
+                    onChange={event => {
+                      openFile(event);
+                    }}
+                  ></input>
+                </div> */}
                 </div>
 
                 
