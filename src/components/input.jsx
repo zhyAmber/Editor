@@ -4,7 +4,7 @@ import { reqInput } from '../api';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { FolderOutlined,FileOutlined } from '@ant-design/icons';
 
-export const getJsonToTree = (data) => {
+export const getJsonToTree = (data,highlights=[]) => {
   // 此处返回json结构
   // 在DirectoryTree使用时加【】
   let obj = {
@@ -13,7 +13,8 @@ export const getJsonToTree = (data) => {
       whiteSpace:'nowrap',
       width:'100%',
       overflow:'hidden',
-      textOverflow:'ellipsis'
+      textOverflow:'ellipsis',
+      color:data&&highlights.includes(data.rel_path)?"red":"black"
     }}>{data.type==="folder"?<FolderOutlined />:<FileOutlined />}{" "+data.name}</div>,
     key: data.rel_path
   }
@@ -22,10 +23,10 @@ export const getJsonToTree = (data) => {
   if (data.type === "folder") {
     obj['children'] = []
     data.folders.forEach(i => {
-      obj.children.push(getJsonToTree(i))
+      obj.children.push(getJsonToTree(i,highlights))
     })
     data.files.forEach(i => {
-      obj.children.push(getJsonToTree(i))
+      obj.children.push(getJsonToTree(i,highlights))
     })
   }else{
     obj['isLeaf']=true
@@ -34,7 +35,6 @@ export const getJsonToTree = (data) => {
   if (obj.children && obj.children.length === 0) {
     delete obj.children
   }
-
   return obj
 }
 

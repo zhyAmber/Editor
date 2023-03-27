@@ -167,6 +167,9 @@ const Editor = ({ language, value, setEditorState }) => {
       }
       console.log('result :', res.data)
     }).catch((err)=>{
+      const conflictfilelist=err.response.data.files
+      setTreeData(getJsonToTree(err.response.data.foldertree,conflictfilelist))
+      console.log(treeData)
       message.destroy()
       message.error(err.response.data.msg)
     })
@@ -350,6 +353,7 @@ const Editor = ({ language, value, setEditorState }) => {
               blockNode={true}
               onSelect={onSelect}
               treeData={treeData ? [treeData] : []}
+              useforrender={treeData}
             />
           </Col>
           <Col span={24 - leftwidth} style={{height:'560px',overflow:'scroll'}}>
