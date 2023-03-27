@@ -56,7 +56,7 @@ const Editor = ({ language, value, setEditorState }) => {
   // 是否选中冲突文件
   const [isConflictfile,setIsConflictfile]=useState(false)
   const [choosewhich,setChoosewhich]=useState({"local":"","remote":""})
-  const [conflictlist,setConflictlist]=useLocalStorage([],"conflictlist")
+  const [conflictlist,setConflictlist]=useLocalStorage("conflictlist",[])
   // 代码的语言
   const [codelanguage,setCodelanguage]=useState("txt")
   // 被选中文件的路径
