@@ -149,5 +149,29 @@ export const pullcontent = params => {
   });
 }
 
+/**
+ * 得到项目中的冲突文件列表
+ */
+export const getdifflist = params=>{
+  const data=qs.stringify(params)
+  return instance({
+    url: '/show/difflist',
+    // headers: myHeaders,
+    method: 'POST',
+    data: data
+  });
+}
 
+/**
+ * 得到项目的文件树
+ */
+ export const getTreeObj = params=>{
+  const data=qs.stringify(params)
+  return instance({
+    url: '/show/foldertree',
+    // headers: myHeaders,
+    method: 'POST',
+    data: data
+  });
+}
 
