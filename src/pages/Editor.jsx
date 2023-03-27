@@ -26,7 +26,7 @@ import 'codemirror/addon/search/search.js'
 //代码高亮
 import 'codemirror/addon/selection/active-line';
 import { Controlled as ControlledEditorComponent } from 'react-codemirror2';
-import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio, Dropdown, Empty } from 'antd';
+import { message, Form, Button, Layout, Tree, Row, Col, Input, Tabs, List, Radio, Dropdown, Empty, Modal } from 'antd';
 import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { reqcontent, getFile, pushcontent, pullcontent, getCommitLogs, checkOutto } from '../api';
 import InputDemo, { getJsonToTree } from '../components/input';
@@ -44,6 +44,9 @@ const getInitialTree = () => {
 }
 
 const Editor = ({ language, value, setEditorState }) => {
+  // 是否选中冲突文件
+  const [isConflictfile,setIsConflictfile]=useState(false)
+  const [choosewhich,setChoosewhich]=useState({"local":"","remote":""})
   // 被选中文件的路径
   const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem", null);
   const [theme, setTheme] = useState('dracula');
@@ -64,7 +67,6 @@ const Editor = ({ language, value, setEditorState }) => {
   const themeArray = ['dracula', 'material', 'mdn-like', 'the-matrix', 'night'];
   const handleChange = (editor, data, value) => {
     setEditorState(value);
-    localStorage.setItem('content', value)
     // localStorage.setItem('content',JSON.stringify(value))
   };
 
@@ -208,6 +210,9 @@ const Editor = ({ language, value, setEditorState }) => {
   };
 
 
+  /**
+   * 点击左侧文件树中的一个文件
+   */
   const onSelect = (keys, info) => {
     console.log('infoinfo', info)
     console.log('Trigger Select', keys);
@@ -239,6 +244,12 @@ const Editor = ({ language, value, setEditorState }) => {
         // else{
         // res&& setEditorState(res.data)
         // }
+      }).catch(err=>{
+        if(err.response.status===400){
+          setIsConflictfile(true)
+          setChoosewhich(err.response.data)
+          setEditorState("")
+        }
       })
     } else {
       // 文件夹直接默认展开
@@ -429,7 +440,16 @@ const Editor = ({ language, value, setEditorState }) => {
       ) : (
         <CommitTab commithistory={commithistory} reponame={cloneName} setTreeData={setTreeData} commitid={commitid} setCommitid={setCommitid} setEditorState={setEditorState} setSubmitinfo={setSubmitinfo}/>
       )}
-
+      <Modal 
+      width={1100}
+      title="Conflict file" open={isConflictfile} onOk={()=>setIsConflictfile(false)} onCancel={()=>setIsConflictfile(false)}>
+        <SolveConflict 
+        choosewhich={choosewhich} 
+        setEditorState={setEditorState}
+        theme={theme}
+        setIsConflictfile={setIsConflictfile}
+        ></SolveConflict>
+      </Modal>
     </Layout>
   );
 };
@@ -487,4 +507,62 @@ const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,set
       )}
     /> : <Empty />}</div>
   )
+}
+
+const SolveConflict=({choosewhich,theme,setEditorState,setIsConflictfile})=>{
+
+  const editboxcss={
+    overflow:"scroll",
+    height:"700px"
+  }
+
+  return (<div>
+    <Row justify={"space-around"}>
+    <ControlledEditorComponent
+      style={editboxcss}
+      value={choosewhich.local}
+      options={{
+        lineWrapping: true, // 代码自动换行
+        lint: true,
+        // lineNumbers: true, // 显示行号,
+        theme: theme,//主题
+        autoCloseTags: true,
+        autoCloseBrackets: true,//标签自动闭合
+        autofocus: true, // 自动获取焦点
+        focus: true,
+        styleActiveLine: true, // 光标代码高亮
+        styleActiveSelected: true,
+        showCursorWhenSelecting: true
+      }}
+    />
+    <ControlledEditorComponent
+      style={editboxcss}
+      value={choosewhich.remote}
+      options={{
+        lineWrapping: true, // 代码自动换行
+        lint: true,
+        // lineNumbers: true, // 显示行号,
+        theme: theme,//主题
+        autoCloseTags: true,
+        autoCloseBrackets: true,//标签自动闭合
+        autofocus: true, // 自动获取焦点
+        focus: true,
+        styleActiveLine: true, // 光标代码高亮
+        styleActiveSelected: true,
+        showCursorWhenSelecting: true
+      }}
+    />
+    </Row>
+    <Row ><br /></Row>
+    <Row justify={"space-around"}>
+      <Button type='primary' onClick={()=>{
+        setEditorState(choosewhich.local)
+        setIsConflictfile(false)
+      }}>choose Local</Button>
+      <Button type='primary' onClick={()=>{
+        setEditorState(choosewhich.remote)
+        setIsConflictfile(false)
+      }}>choose Remote</Button>
+    </Row>
+  </div>)
 }
