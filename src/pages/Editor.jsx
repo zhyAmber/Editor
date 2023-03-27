@@ -6,6 +6,9 @@ import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
 import "codemirror/mode/python/python.js";
+import "codemirror/mode/markdown/markdown.js";
+import "codemirror/mode/sql/sql.js";
+
 
 
 import 'codemirror/theme/dracula.css';
@@ -43,11 +46,19 @@ const getInitialTree = () => {
   return null
 }
 
+const namemap={
+  "py":"python",
+  "html":"xml",
+  "md":"markdown"
+}
+
 const Editor = ({ language, value, setEditorState }) => {
   // 是否选中冲突文件
   const [isConflictfile,setIsConflictfile]=useState(false)
   const [choosewhich,setChoosewhich]=useState({"local":"","remote":""})
   const [conflictlist,setConflictlist]=useLocalStorage([],"conflictlist")
+  // 代码的语言
+  const [codelanguage,setCodelanguage]=useState("txt")
   // 被选中文件的路径
   const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem", null);
   const [theme, setTheme] = useState('dracula');
@@ -228,6 +239,18 @@ const Editor = ({ language, value, setEditorState }) => {
     console.log('infoinfo', info)
     console.log('Trigger Select', keys);
     console.log('info', info.node.key);
+    if(info.node.title&&info.node.title.props&&info.node.title.props.children){
+      const filename=info.node.title.props.children[1]
+      const filenamesplit=filename.split(".")
+      let filepostname=filenamesplit.pop()
+      console.log("后缀",filepostname)
+      if(filepostname in namemap){
+        filepostname=namemap[filepostname]
+      }
+      setCodelanguage(filepostname)
+    }
+
+
     setSubmitinfo(info.node.key);
     //localStorage.setItem('result.data: ', JSON.stringify(info.node))
     //console.log("submit",submitinfo)
@@ -246,7 +269,6 @@ const Editor = ({ language, value, setEditorState }) => {
         // else {
         //   res && setEditorState(JSON.parse(JSON.stringify(res.data)))
         // }
-
         setEditorState(res.data)
 
         // if(info.node.title.includes('json')){
@@ -256,7 +278,7 @@ const Editor = ({ language, value, setEditorState }) => {
         // res&& setEditorState(res.data)
         // }
       }).catch(err=>{
-        if(err.response.status===400){
+        if(err.response&&err.response.status===400){
           setIsConflictfile(true)
           setChoosewhich(err.response.data)
           setEditorState("")
@@ -264,6 +286,8 @@ const Editor = ({ language, value, setEditorState }) => {
       })
     } else {
       // 文件夹直接默认展开
+      // 清空编辑器
+      setEditorState("")
     }
 
 
@@ -397,7 +421,7 @@ const Editor = ({ language, value, setEditorState }) => {
                     options={{
                       lineWrapping: true, // 代码自动换行
                       lint: true,
-                      mode: language,// 语言
+                      mode: codelanguage,// 语言
                       lineNumbers: true, // 显示行号,
                       theme: theme,//主题
                       autoCloseTags: true,
