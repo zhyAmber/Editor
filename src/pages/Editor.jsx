@@ -47,6 +47,7 @@ const Editor = ({ language, value, setEditorState }) => {
   // 是否选中冲突文件
   const [isConflictfile,setIsConflictfile]=useState(false)
   const [choosewhich,setChoosewhich]=useState({"local":"","remote":""})
+  const [conflictlist,setConflictlist]=useLocalStorage([],"conflictlist")
   // 被选中文件的路径
   const [submitinfo, setSubmitinfo] = useLocalStorage("selectitem", null);
   const [theme, setTheme] = useState('dracula');
@@ -130,6 +131,13 @@ const Editor = ({ language, value, setEditorState }) => {
       if (res.status === 200) {
         message.destroy()
         message.success("success commit")
+        // 如果在冲突列表中，从里面去除它
+        if(conflictlist.includes(submitinfo)){
+          const newlist=conflictlist
+          newlist.splice(newlist.indexOf(submitinfo))
+          setConflictlist(newlist)
+          window.location.reload()
+        }
       }
       console.log('result :', res.data)
     }).catch((err)=>{
@@ -167,8 +175,8 @@ const Editor = ({ language, value, setEditorState }) => {
       }
       console.log('result :', res.data)
     }).catch((err)=>{
-      const conflictfilelist=err.response.data.files
-      setTreeData(getJsonToTree(err.response.data.foldertree,conflictfilelist))
+      setConflictlist(err.response.data.files)
+      setTreeData(getJsonToTree(err.response.data.foldertree,err.response.data.files))
       console.log(treeData)
       message.destroy()
       message.error(err.response.data.msg)
@@ -442,7 +450,7 @@ const Editor = ({ language, value, setEditorState }) => {
         </Row>
         </div>
       ) : (
-        <CommitTab commithistory={commithistory} reponame={cloneName} setTreeData={setTreeData} commitid={commitid} setCommitid={setCommitid} setEditorState={setEditorState} setSubmitinfo={setSubmitinfo}/>
+        <CommitTab commithistory={commithistory} reponame={cloneName} setTreeData={setTreeData} commitid={commitid} setCommitid={setCommitid} setEditorState={setEditorState} setSubmitinfo={setSubmitinfo} setCommitmsg={setCommitmsg}/>
       )}
       <Modal 
       width={1100}
@@ -463,7 +471,7 @@ export default Editor;
 /**
  * 包含历史commit信息
  */
-const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,setEditorState,setSubmitinfo }) => {
+const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,setEditorState,setSubmitinfo,setCommitmsg }) => {
 
   console.log(commitid)
 
@@ -492,6 +500,7 @@ const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,set
                     setSubmitinfo("")
                     message.destroy()
                     message.success("checkout to "+res.data.commitid)
+                    setCommitmsg("merge: solve conflict")
                   }
                 }).catch((err)=>{
                   message.destroy()
