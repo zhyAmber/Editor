@@ -39,17 +39,19 @@ export const getJsonToTree = (data,highlights=[]) => {
 }
 
 const InputDemo = (props) => {
-  const [InputValue, setInputValue] = useLocalStorage("clonedir", "git@github.com:zhyAmber/FYP.git")
-  const [content, setContent] = useState("")
+  const [InputValue, setInputValue] = useLocalStorage("clonedir", "")
+  // const [content, setContent] = useState("")
   // 克隆的项目记录 [{value,label},{}]
-  const [clonehislist,setClonehislist]=useState([])
-
-  useEffect(()=>{
-    const clonelist=JSON.parse(localStorage.getItem("clonelist"))
-    if(clonelist){
-      setClonehislist(clonelist)
+  const [clonehislist,setClonehislist]=useLocalStorage("clonehistory",[
+    {
+      'value':"git@github.com:zhyAmber/FYP.git",
+      "label":"git@github.com:zhyAmber/FYP.git"
+    },
+    {
+      'value':"git@gitee.com:yingxichen/Frontend.git",
+      "label":"git@gitee.com:yingxichen/Frontend.git"
     }
-  },[])
+    ])
 
   const getData = (data) => {
     return getJsonToTree(data)
@@ -74,7 +76,7 @@ const InputDemo = (props) => {
     }
 
     setClonehislist(newlist)
-    localStorage.setItem("clonelist",JSON.stringify(clonehislist))
+
     reqInput(InputValue).then(result=>{
       console.log('clone result: ', result);
       //let Storagedata=this.state.Storagedata
