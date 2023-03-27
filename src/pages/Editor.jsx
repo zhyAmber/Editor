@@ -7,7 +7,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
 import "codemirror/mode/python/python.js";
 import "codemirror/mode/markdown/markdown.js";
-import "codemirror/mode/sql/sql.js";
+
 
 
 
@@ -49,7 +49,12 @@ const getInitialTree = () => {
 const namemap={
   "py":"python",
   "html":"xml",
-  "md":"markdown"
+  "md":"markdown",
+  "js":"javascript",
+  "jsx":"javascript",
+  "less":"css",
+  "json":"javascript",
+  "java":"javascript"
 }
 
 const Editor = ({ language, value, setEditorState }) => {
@@ -239,15 +244,19 @@ const Editor = ({ language, value, setEditorState }) => {
     console.log('infoinfo', info)
     console.log('Trigger Select', keys);
     console.log('info', info.node.key);
+    let filepostname
     if(info.node.title&&info.node.title.props&&info.node.title.props.children){
       const filename=info.node.title.props.children[1]
       const filenamesplit=filename.split(".")
-      let filepostname=filenamesplit.pop()
+      filepostname=filenamesplit.pop()
       console.log("后缀",filepostname)
       if(filepostname in namemap){
-        filepostname=namemap[filepostname]
+        // 使用目标语言渲染颜色
+        setCodelanguage(namemap[filepostname])
+      }else{
+        setCodelanguage(filepostname)
       }
-      setCodelanguage(filepostname)
+      
     }
 
 
@@ -269,7 +278,15 @@ const Editor = ({ language, value, setEditorState }) => {
         // else {
         //   res && setEditorState(JSON.parse(JSON.stringify(res.data)))
         // }
-        setEditorState(res.data)
+
+        // 如果是json，特殊处理，否则会变成js对象
+        console.log(filepostname)
+        if(filepostname==="json"){
+          setEditorState(JSON.stringify(res.data))
+        }else{
+          setEditorState(res.data)
+        }
+
 
         // if(info.node.title.includes('json')){
         //   res&& setEditorState(JSON.stringify(res.data))
@@ -278,6 +295,7 @@ const Editor = ({ language, value, setEditorState }) => {
         // res&& setEditorState(res.data)
         // }
       }).catch(err=>{
+        // 为冲突文件
         if(err.response&&err.response.status===400){
           setIsConflictfile(true)
           setChoosewhich(err.response.data)
@@ -415,7 +433,7 @@ const Editor = ({ language, value, setEditorState }) => {
                       setCursor(data)
                     }}
                     onBeforeChange={handleChange}
-                    value={value}
+                    value={""+value}
                     autoScroll="true"
                     //className="code-mirror-wrapper"
                     options={{
@@ -430,7 +448,8 @@ const Editor = ({ language, value, setEditorState }) => {
                       focus: true,
                       styleActiveLine: true, // 光标代码高亮
                       styleActiveSelected: true,
-                      showCursorWhenSelecting: true
+                      showCursorWhenSelecting: true,
+                      smartIndent : true //智能缩进
                     }}
                   />
                 </div>
@@ -557,7 +576,7 @@ const SolveConflict=({choosewhich,theme,setEditorState,setIsConflictfile})=>{
     <Row justify={"space-around"}>
     <ControlledEditorComponent
       style={editboxcss}
-      value={choosewhich.local}
+      value={""+choosewhich.local}
       options={{
         lineWrapping: true, // 代码自动换行
         lint: true,
@@ -574,7 +593,7 @@ const SolveConflict=({choosewhich,theme,setEditorState,setIsConflictfile})=>{
     />
     <ControlledEditorComponent
       style={editboxcss}
-      value={choosewhich.remote}
+      value={""+choosewhich.remote}
       options={{
         lineWrapping: true, // 代码自动换行
         lint: true,
