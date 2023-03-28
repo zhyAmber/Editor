@@ -60,3 +60,11 @@
 .hoverbox:hover{
   transform:scale(1.2);
 }
+
+#comparebox .CodeMirror{
+  min-height: 300px;
+  min-width: 400px;
+  max-width: 500px;
+  max-height: 800px;
+  overflow: scroll;
+}

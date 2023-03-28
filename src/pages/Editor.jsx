@@ -569,12 +569,11 @@ const CommitTab = ({ commithistory,reponame,setTreeData,commitid,setCommitid,set
 const SolveConflict=({choosewhich,theme,setEditorState,setIsConflictfile})=>{
 
   const editboxcss={
-    overflow:"scroll",
-    height:"700px"
+    overflow:"scroll"
   }
 
   return (<div>
-    <Row justify={"space-around"}>
+    <Row justify={"space-around"} id="comparebox">
     <ControlledEditorComponent
       style={editboxcss}
       value={""+choosewhich.local}

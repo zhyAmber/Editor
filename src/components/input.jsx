@@ -50,6 +50,10 @@ const InputDemo = (props) => {
     {
       'value':"git@gitee.com:yingxichen/Frontend.git",
       "label":"git@gitee.com:yingxichen/Frontend.git"
+    },
+    {
+      'value':"git@github.com:sanmusen214/justtest.git",
+      'label':"git@github.com:sanmusen214/justtest.git"
     }
     ])
 
