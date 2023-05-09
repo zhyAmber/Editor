@@ -116,7 +116,7 @@ const InputDemo = (props) => {
       }
     }).catch((err)=>{
       message.destroy()
-      message.error('Error when clone');
+      message.error('Error when clone, try again?');
     })
     
     //console.log('localstorage',localStorage)
