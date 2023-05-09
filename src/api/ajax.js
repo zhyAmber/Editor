@@ -5,7 +5,7 @@ let BASEURL
 console.log("env: ",process.env.NODE_ENV)
 if(process.env.NODE_ENV==="production"){
   // 部署环境
-  BASEURL = 'http://114.115.249.201:30004'
+  BASEURL = window.location.href.split('?')[0]
 }else{
   // 开发环境
   BASEURL = 'http://127.0.0.1:5000'
